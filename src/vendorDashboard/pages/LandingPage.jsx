@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import NavBar from '../components/NavBar'
 import SideBar from '../components/SideBar'
@@ -9,8 +8,8 @@ import AddProduct from '../components/forms/AddProduct'
 import Welcome from '../components/Welcome'
 import AllProducts from '../components/AllProducts'
 
-
 const LandingPage = () => {
+
   const [showLogin , setShowLogin] = useState(false)
   const [showRegister , setShowRegister] = useState(false)
   const [showFirm, setShowFirm] = useState(false)
@@ -19,39 +18,70 @@ const LandingPage = () => {
   const [showAllProducts, setShowAllProducts] = useState(false)
   const [showLogOut, setShowLogOut] = useState(false)
   const [showFirmTitle, setShowFirmTitle] = useState(true)
-  
 
-  
+  // ✅ Login Success Handler (UPDATED)
+  const loginSuccessHandler = () => {
+    setShowLogOut(true)
 
-  useEffect (()=>{
-  const loginToken = localStorage.getItem('loginToken')
-  if(loginToken){
-     setShowLogOut(true)
+    // Check firm immediately after login
+    const existingFirm = localStorage.getItem('firmName')
+    if(existingFirm){
+      setShowFirmTitle(false)
+    }
   }
- }, [])
 
+  // ✅ Check login on page load
+  useEffect (()=> {
+    const loginToken = localStorage.getItem('loginToken')
+    if(loginToken){
+       setShowLogOut(true)
+    }
+  }, [])
+
+  // ✅ Check firm on page load
   useEffect(()=>{
     const firmName = localStorage.getItem('firmName')
     if(firmName){
       setShowFirmTitle(false)
     }
-  })
+  }, []) 
+
+  // ✅ Listen for firmAdded event (NO REFRESH NEEDED)
+  useEffect(() => {
+    const handleFirmAdded = () => {
+      setShowFirmTitle(false)
+    }
+
+    window.addEventListener("firmAdded", handleFirmAdded)
+
+    return () => {
+      window.removeEventListener("firmAdded", handleFirmAdded)
+    }
+  }, [])
 
   const logOutHandler = () =>{
-    confirm('Are you sure to logout?')
+    const confirmLogout = window.confirm('Are you sure to logout?')
+    if(!confirmLogout) return;
+
     localStorage.removeItem('loginToken')
     localStorage.removeItem('firmId')
     localStorage.removeItem('firmName')
+
     setShowLogOut(false)
     setShowFirmTitle(true)
-     
 
+    setShowLogin(false)
+    setShowRegister(false)
+    setShowFirm(false)
+    setShowProduct(false)
+    setShowWelcome(false)
+    setShowAllProducts(false)
   }
 
   const showLoginHandler = () =>{
     setShowLogin(true)
     setShowRegister(false)
-     setShowFirm(false)
+    setShowFirm(false)
     setShowProduct(false)
     setShowWelcome(false)
     setShowAllProducts(false)
@@ -68,35 +98,33 @@ const LandingPage = () => {
 
   const showFirmHandler = ()=>{
     if(showLogOut){
-    setShowFirm(true)
-    setShowLogin(false)
-    setShowRegister(false)
-    setShowProduct(false)
-    setShowWelcome(false)
-    setShowAllProducts(false)
+      setShowFirm(true)
+      setShowLogin(false)
+      setShowRegister(false)
+      setShowProduct(false)
+      setShowWelcome(false)
+      setShowAllProducts(false)
     }else{
       alert("Please Login")
       setShowLogin(true)
-      setShowRegister(false)
     }
   }
 
   const showProductHandler = ()=>{
     if(showLogOut){
       setShowProduct(true)
-    setShowLogin(false)
-    setShowRegister(false)
-    setShowFirm(false)
-    setShowWelcome(false)
-    setShowAllProducts(false)
-   }else{
-    alert("Please Login")
-      setShowLogin(true)
+      setShowLogin(false)
       setShowRegister(false)
-   }
- }
+      setShowFirm(false)
+      setShowWelcome(false)
+      setShowAllProducts(false)
+    }else{
+      alert("Please Login")
+      setShowLogin(true)
+    }
+  }
 
-  const showWelcomeHandler = () =>{
+  const showWelcomeHandler = ()=>{
     setShowWelcome(true)
     setShowLogin(false)
     setShowRegister(false)
@@ -105,18 +133,17 @@ const LandingPage = () => {
     setShowAllProducts(false)
   }
 
-  const showAllProductsHandler = () =>{
+  const showAllProductsHandler = ()=>{
     if(showLogOut){
-    setShowWelcome(false)
-    setShowLogin(false)
-    setShowRegister(false)
-    setShowFirm(false)
-    setShowProduct(false)
-    setShowAllProducts(true)
+      setShowWelcome(false)
+      setShowLogin(false)
+      setShowRegister(false)
+      setShowFirm(false)
+      setShowProduct(false)
+      setShowAllProducts(true)
     }else{
       alert("Please Login")
       setShowLogin(true)
-      setShowRegister(false)
     }
   }
 
@@ -124,22 +151,40 @@ const LandingPage = () => {
     <>
     <section className="landingSection">
       
-      <NavBar showLoginHandler={showLoginHandler} showRegisterHandler ={showRegisterHandler}
-      showLogOut = {showLogOut} logOutHandler = {logOutHandler} / >
-    <div className="collectionSection">
-      <SideBar  showFirmHandler ={showFirmHandler} showProductHandler = {showProductHandler}
-      showAllProductsHandler = {showAllProductsHandler}  showFirmTitle = {showFirmTitle} />
-      {showLogin && <Login showWelcomeHandler = {showWelcomeHandler} />}
-      {showRegister && <Register showLoginHandler={showLoginHandler}/> } 
-      {showFirm && showLogOut && <AddFirm />}
-      {showProduct && showLogOut && <AddProduct />}
-      {showWelcome && <Welcome/>}
-      {showAllProducts && showLogOut && <AllProducts />}
-      
+      <NavBar 
+        showLoginHandler={showLoginHandler} 
+        showRegisterHandler ={showRegisterHandler}
+        showLogOut = {showLogOut} 
+        logOutHandler = {logOutHandler} 
+      />
 
-    </div>
+      <div className="collectionSection">
+
+        <SideBar  
+          showFirmHandler ={showFirmHandler} 
+          showProductHandler = {showProductHandler}
+          showAllProductsHandler = {showAllProductsHandler}  
+          showFirmTitle = {showFirmTitle} 
+        />
+
+        {showLogin && 
+          <Login 
+            showWelcomeHandler = {showWelcomeHandler}
+            loginSuccessHandler = {loginSuccessHandler}
+          />
+        }
+
+        {showRegister && <Register showLoginHandler={showLoginHandler}/> } 
+
+        {/* ✅ FINAL FIX: AddFirm only if no firm exists */}
+        {showFirm && showLogOut && showFirmTitle && <AddFirm />}
+
+        {showProduct && showLogOut && <AddProduct />}
+        {showWelcome && <Welcome/>}
+        {showAllProducts && showLogOut && <AllProducts />}
+
+      </div>
     </section>
-    
     </>
   )
 }
