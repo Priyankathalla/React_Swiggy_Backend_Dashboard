@@ -107,6 +107,7 @@ const LandingPage = () => {
     }else{
       alert("Please Login")
       setShowLogin(true)
+      setShowRegister(false)
     }
   }
 
@@ -121,6 +122,7 @@ const LandingPage = () => {
     }else{
       alert("Please Login")
       setShowLogin(true)
+      setShowRegister(false)
     }
   }
 
@@ -144,6 +146,7 @@ const LandingPage = () => {
     }else{
       alert("Please Login")
       setShowLogin(true)
+      setShowRegister(false)
     }
   }
 
